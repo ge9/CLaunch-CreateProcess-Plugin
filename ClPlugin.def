@@ -1,0 +1,7 @@
+LIBRARY ClPlugin
+
+;SECTIONS
+;	.GLOBALS READ WRITE SHARED
+
+EXPORTS
+	ClPluginEventHandler		@1

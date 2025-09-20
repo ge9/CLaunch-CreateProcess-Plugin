@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30204.135
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClPlugin", "ClPlugin64.vcxproj", "{03479517-7E1E-4602-B387-BEC962BE9882}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{03479517-7E1E-4602-B387-BEC962BE9882}.Debug|Win32.ActiveCfg = Debug|Win32
+		{03479517-7E1E-4602-B387-BEC962BE9882}.Debug|Win32.Build.0 = Debug|Win32
+		{03479517-7E1E-4602-B387-BEC962BE9882}.Debug|x64.ActiveCfg = Debug|x64
+		{03479517-7E1E-4602-B387-BEC962BE9882}.Debug|x64.Build.0 = Debug|x64
+		{03479517-7E1E-4602-B387-BEC962BE9882}.Release|Win32.ActiveCfg = Release|Win32
+		{03479517-7E1E-4602-B387-BEC962BE9882}.Release|Win32.Build.0 = Release|Win32
+		{03479517-7E1E-4602-B387-BEC962BE9882}.Release|x64.ActiveCfg = Release|x64
+		{03479517-7E1E-4602-B387-BEC962BE9882}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3215A44A-BA08-4259-9D5E-A46A340A51E3}
+	EndGlobalSection
+EndGlobal
