@@ -9,6 +9,7 @@
 //==============================================================================
 
 #include <windows.h>
+#include <windowsx.h>
 #include <tchar.h>
 #include "resource.h"
 #include "ClPlugin.h"
@@ -52,9 +53,9 @@ BOOL ClPluginInit(int id, LPVOID *pvFunc)
 	//--------------------------------------------------------------------------
 	iID = id;																	// プラグイン登録ID保存
 	// ↓ボタン登録可能なプラグインの場合はここでアイテム登録を行う
-	//TCHAR	szName[MAX_PLUGIN_TITLE];
-	//LoadString(hInst, IDS_ITEM_NAME, szName, BufLen(szName));					// アイテム名文字列取得
-	//CpiRegisterButtonItem(iID, szName);										// ボタンアイテムに登録
+	TCHAR	szName[MAX_PLUGIN_TITLE];
+	LoadString(hInst, IDS_ITEM_NAME, szName, BufLen(szName));					// アイテム名文字列取得
+	CpiRegisterButtonItem(iID, szName);										// ボタンアイテムに登録
 	return(TRUE);																// 正常終了
 }
 
@@ -87,7 +88,7 @@ BOOL ClPluginInitItem(LPBTNINFO pBI)
 	//	lstrcpy(pBI->szParam, ...
 	//	lstrcpy(pBI->szDir, ...
 	//	pBI->iSW = ...
-	//	pBI->uFlags = ...
+	pBI->uFlags = 6;//「通常」優先度、コンソールウインドウは通常
 	return(TRUE);																// 正常終了
 }
 
@@ -102,6 +103,28 @@ BOOL ClPluginInitItem(LPBTNINFO pBI)
 //==============================================================================
 BOOL ClPluginExecute(LPBTNINFO pBI, UINT uOption)
 {
+	//prepare STARTUPINFO
+	STARTUPINFO si;
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(STARTUPINFO);
+
+	PROCESS_INFORMATION pi;
+	ZeroMemory(&pi, sizeof(pi));
+	UINT prio = 0x20;
+	switch (pBI->uFlags >> 1) {
+	case 0: prio = 0x100; break;
+	case 1: prio = 0x80; break;
+	case 2: prio = 0x8000; break;
+	case 3: prio = 0x20; break;
+	case 4: prio = 0x4000; break;
+	case 5: prio = 0x40; break;
+	}
+	//set 0x08000000 if checked
+	if (!CreateProcess(NULL, pBI->szParam, NULL, NULL, NULL, (pBI->uFlags & 0x1) << 27 | prio, NULL, pBI->szDir[0] ? pBI->szDir: NULL, &si, &pi))
+		MessageBox(0, L"起動に失敗しました。コマンドと作業ディレクトリを確認してください。", NULL, 0);
+
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 
 	if (uOption & EXE_PRESS_HOLD)												// ボタン長押しで起動された？
 	{
@@ -353,34 +376,60 @@ void ClOnRestrictionMode(DWORD dwStatus)
 //==============================================================================
 LRESULT CALLBACK ClPluginItemPropDlg(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	static LPBTNINFO	pBI = NULL;
+	static LPBTNINFO pBI = NULL;
 
 	switch (uMsg)
 	{
-	//--------------------------------------------------------------------------
-	//	WM_INITDIALOG：ダイアログ初期化処理
-	//--------------------------------------------------------------------------
-	  case WM_INITDIALOG:
-		pBI = (LPBTNINFO)lParam;												// パラメータのボタン情報ポインタを保存
-		return(TRUE);															// コントロールにフォーカスをセットしていない
+		//----------------------------------------------------------------------
+		// WM_INITDIALOG：ダイアログ初期化処理
+		//----------------------------------------------------------------------
+	case WM_INITDIALOG:
+		pBI = (LPBTNINFO)lParam;    // パラメータのボタン情報ポインタを保存
 
-	//--------------------------------------------------------------------------
-	//	WM_COMMAND：
-	//--------------------------------------------------------------------------
-	  case WM_COMMAND:
+		if (pBI)
+		{
+			// szParam の内容をテキストボックスにセット
+			SetDlgItemText(hDlg, IDC_EDIT_CMD, pBI->szParam);
+			SetDlgItemText(hDlg, IDC_EDIT_WD, pBI->szDir);
+			CheckDlgButton(hDlg, IDC_CHECK_CREATECONSOLE, pBI->uFlags & 0x1);
+
+			SendDlgItemMessage(hDlg, IDC_COMBO_PRIORITY, CB_ADDSTRING, 0, (LPARAM)L"リアルタイム");
+			SendDlgItemMessage(hDlg, IDC_COMBO_PRIORITY, CB_ADDSTRING, 0, (LPARAM)L"高");
+			SendDlgItemMessage(hDlg, IDC_COMBO_PRIORITY, CB_ADDSTRING, 0, (LPARAM)L"通常以上");
+			SendDlgItemMessage(hDlg, IDC_COMBO_PRIORITY, CB_ADDSTRING, 0, (LPARAM)L"通常");
+			SendDlgItemMessage(hDlg, IDC_COMBO_PRIORITY, CB_ADDSTRING, 0, (LPARAM)L"通常以下");
+			SendDlgItemMessage(hDlg, IDC_COMBO_PRIORITY, CB_ADDSTRING, 0, (LPARAM)L"低");
+			ComboBox_SetCurSel(GetDlgItem(hDlg, IDC_COMBO_PRIORITY), (pBI->uFlags & 0b1110) >> 1);
+		}
+
+		return TRUE;    // コントロールにフォーカスをセットしていない
+
+		//----------------------------------------------------------------------
+		// WM_COMMAND：
+		//----------------------------------------------------------------------
+	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
-		  case IDOK:															// OKボタンが押された？
-			EndDialog(hDlg, TRUE);												// ダイアログBOXを閉じる
+		case IDOK:   // OKボタンが押された
+			if (pBI != NULL)
+			{
+				// テキストボックスの内容を取得して szParam に格納
+				GetDlgItemText(hDlg, IDC_EDIT_CMD, pBI->szParam, ARRAYSIZE(pBI->szParam));
+				GetDlgItemText(hDlg, IDC_EDIT_WD, pBI->szDir, ARRAYSIZE(pBI->szDir));
+				int sel = ComboBox_GetCurSel(GetDlgItem(hDlg, IDC_COMBO_PRIORITY));
+				UINT createConsole = IsDlgButtonChecked(hDlg, IDC_CHECK_CREATECONSOLE);
+				pBI->uFlags = (sel << 1) | createConsole;
+			}
+			EndDialog(hDlg, TRUE);
 			break;
 
-		  case IDCANCEL:														// キャンセルボタンが押された？
-			EndDialog(hDlg, FALSE);												// ダイアログBOXを閉じる
+		case IDCANCEL:  // キャンセルボタンが押された
+			EndDialog(hDlg, FALSE);
 			break;
 		}
-		return(TRUE);															// メッセージ処理済み
+		return TRUE;    // メッセージ処理済み
 	}
-	return(FALSE);																// メッセージ未処理
+	return FALSE;   // メッセージ未処理
 }
 
 

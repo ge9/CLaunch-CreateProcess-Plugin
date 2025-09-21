@@ -92,6 +92,13 @@ FONT 9, "MS UI Gothic", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,106,135,50,14
     PUSHBUTTON      "キャンセル",IDCANCEL,161,135,50,14
+    EDITTEXT        IDC_EDIT_CMD,10,22,200,38,ES_MULTILINE | ES_AUTOHSCROLL
+    LTEXT           "実行するコマンド:",IDC_STATIC,12,10,99,8
+    CONTROL         "コンソールウインドウを表示しない",IDC_CHECK_CREATECONSOLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,120,107,10
+    EDITTEXT        IDC_EDIT_WD,11,81,198,12,ES_AUTOHSCROLL
+    LTEXT           "作業フォルダ:",IDC_STATIC,12,70,48,7
+    COMBOBOX        IDC_COMBO_PRIORITY,44,101,165,89,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "優先度: ",IDC_STATIC,12,103,26,8
 END
 
 
@@ -156,6 +163,10 @@ BEGIN
         TOPMARGIN, 8
         BOTTOMMARGIN, 149
     END
+
+    IDD_PROPERTY, DIALOG
+    BEGIN
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -170,6 +181,11 @@ BEGIN
     0
 END
 
+IDD_PROPERTY AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -180,7 +196,7 @@ STRINGTABLE
 BEGIN
     IDS_TITLE               "CLaunch Plugin Framework Version 1.07"
     IDS_COPYRIGHT           "Copyright (C) 2005-2020 Pyonkichi"
-    IDS_ITEM_NAME           "プラグイン"
+    IDS_ITEM_NAME           "CreateProcess（プラグイン）"
 END
 
 #endif    // 日本語 (日本) resources
