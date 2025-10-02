@@ -194,7 +194,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_TITLE               "CLaunch Plugin Framework Version 1.07"
+    IDS_TITLE               "CLaunch CreateProcess Plugin"
     IDS_COPYRIGHT           "Copyright (C) 2005-2020 Pyonkichi"
     IDS_ITEM_NAME           "CreateProcess（プラグイン）"
 END
